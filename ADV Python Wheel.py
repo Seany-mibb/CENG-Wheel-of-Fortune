@@ -67,8 +67,11 @@ class WheelHangman:
         self.writer.write(text, align="center", font=("Arial", 13, "normal"))  # Draw new text on screen
 
     def play_game(self):
-        self.draw_text("Make sure to type '  ' or press the space key and enter to get free points and view spaces", 0, 200)
-        time.sleep(3)
+        # Automatically add spaces to guessed letters
+        for letter in self.phrase:
+            if letter == " ":
+                self.guessed_letters.add(" ")
+
         while set(self.phrase) - self.guessed_letters:  # Continuing until all letters are guessed aka. when the set difference is empty
             self.draw_text("Phrase: " + self.display_phrase(), 0, 200)
             self.screen.update()
@@ -78,6 +81,12 @@ class WheelHangman:
             if guess and len(guess) == 1:
                 guess = guess.upper()  # Convert the guess to uppercase
             
+            if guess == " ":
+                self.draw_text("You guessed a space! No points awarded.", 0, -200)
+                self.screen.update()
+                time.sleep(3)  # Waiting before continuing
+                continue  # Skip the rest of the loop and ask for another guess
+            
             if guess and guess in self.phrase and guess not in self.guessed_letters:  # Check if guess is correct and not already guessed
                 occurrences = self.phrase.count(guess)  # Count how many times the guessed letter appears
                 self.guessed_letters.add(guess)  # Add the letter to the guessed set
@@ -85,10 +94,7 @@ class WheelHangman:
                 wheel_value = self.spin_wheel()  # Spin the wheel for the money value
                 round_money = occurrences * wheel_value  # Calculate money earned for this guess
                 self.total_money += round_money  # Add the money to the total
-                if guess == " ":
-                    self.draw_text(f"Correct! '  ' appears {occurrences} times. You earned ${round_money}.", 0, -200)
-                else:    
-                    self.draw_text(f"Correct! '{guess}' appears {occurrences} times. You earned ${round_money}.", 0, -200)
+                self.draw_text(f"Correct! '{guess}' appears {occurrences} times. You earned ${round_money}.", 0, -200)
 
             else:
                 self.draw_text("Invalid, Incorrect or already guessed!", 0, -200)
